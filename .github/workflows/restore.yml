@@ -1,0 +1,21 @@
+name: Restore folders
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move files into folders
+        run: |
+          shopt -s nullglob
+          for f in *__*; do
+            p="${f//__//}"
+            mkdir -p "$(dirname "$p")"
+            git mv "$f" "$p"
+          done
+          if [ -f gitignore.txt ]; then git mv gitignore.txt .gitignore; fi
+          git config user.name "touch-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git commit -m "Restore folder structure" && git push || echo "Nothing to move"
